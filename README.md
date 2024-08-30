@@ -10,19 +10,23 @@ For more background on Polly see the [main Polly repo](https://github.com/App-vN
 
 Define an `Action<ILogger, Context, DelegateResult<TResult>> logAction` to log exceptions or results.  The `Context` input parameter allows filtering based on Polly's in-built [execution metadata](https://github.com/App-vNext/Polly/wiki/Keys-And-Context-Data) or context you pass in to the execution.
 
+```csharp
     Action<ILogger, Context, DelegateResult<HttpResponseMessage>> logAction = (logger, context, outcome) => 
     {
         logger.LogError("The call resulted in outcome: {happened}", outcome.Exception?.Message ?? outcome.Result.StatusCode.ToString());
     }
+```
 
 Define a `Func<Context, ILogger> loggerProvider` to select an `ILogger` based on `Context`.   This can use the extension method `Context.GetLogger()` defined on `Polly.Context`, if execution dispatch uses the `Context.WithLogger(ILogger)` overload, as demonstrated in the ConsoleApp example.
 
 Configure the policy:
 
-    var loggingPolicy = Policy<HttpResponseMessage>
-        .Handle<HttpRequestException>()
-        .OrResult((int)response.StatusCode >= 500 || response.StatusCode == HttpStatusCode.RequestTimeout)
-        .AsyncLog(ctx => ctx.GetLogger(), logAction);
+```csharp
+var loggingPolicy = Policy<HttpResponseMessage>
+    .Handle<HttpRequestException>()
+    .OrResult((int)response.StatusCode >= 500 || response.StatusCode == HttpStatusCode.RequestTimeout)
+    .AsyncLog(ctx => ctx.GetLogger(), logAction);
+```
 
 The policy would typically be combined with other policies in a PolicyWrap - see below.
 
@@ -32,9 +36,11 @@ Define a `logAction` and `loggerProvider` as above.
 
 Configure the policy, for example:
 
-    var loggingPolicy = Policy
-        .Handle<Exception>()
-        .Log(ctx => ctx.GetLogger(), logAction);
+```csharp
+var loggingPolicy = Policy
+    .Handle<Exception>()
+    .Log(ctx => ctx.GetLogger(), logAction);
+```
 
 ### Using LoggingPolicy in PolicyWrap
 
